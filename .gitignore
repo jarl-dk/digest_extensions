@@ -1,3 +1,6 @@
+tmp/
+lib/digest_extensions.so
+
 # rcov generated
 coverage
 
