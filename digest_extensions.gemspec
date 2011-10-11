@@ -26,6 +26,7 @@ Gem::Specification.new do |s|
     "README.rdoc",
     "Rakefile",
     "VERSION",
+    "digest_extensions.gemspec",
     "ext/digest_extensions/digest_extensions.c",
     "ext/digest_extensions/digest_extensions_helper.h",
     "ext/digest_extensions/extconf.rb",
