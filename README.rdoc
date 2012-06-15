@@ -2,9 +2,9 @@
 
 Extension to the Digest module of the ruby standard library to support marshalling 
 
-With this gem you can accumulative compute the digest of a byte
-sequence over several executions iterations by storing the marshalled
-digest object in a database:
+With this gem you can accumulatively compute the digest of a byte
+sequence over several executions by storing the marshalled digest
+object in a database:
 
     class FakeDatabase
       attr_accessor :value
@@ -27,7 +27,17 @@ digest object in a database:
     end
     Marshal::load(@db.value).hexdigest.should == Digest::MD5.hexdigest(parts_array.inject("", :+))
 
-The plan is to have this feature become part of the ruby standard library.
+The plan is to have this feature to be included in the ruby standard library.
+
+== Known issues
+
+Currently the marshalled values are specific to the underlying native
+library used to compute the digest values. That means that if you are
+using a ruby that is compiled with linkage to OpenSSL as the
+underlying md5 library, then the marshalled values (in the database)
+cannot be used with a ruby version compiled with linkage to rubys
+native md5 implementation. So take care of that when you consider
+upgrading your ruby version.
 
 == Contributing to digest_extensions
 
@@ -41,6 +51,6 @@ The plan is to have this feature become part of the ruby standard library.
 
 == Copyright
 
-Copyright (c) 2011 Jarl Friis. See LICENSE.txt for
+Copyright (c) 2011-2012 Jarl Friis. See LICENSE.txt for
 further details.
 
