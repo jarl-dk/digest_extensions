@@ -1,9 +1,36 @@
 = digest_extensions
 
-Description goes here.
+Extension to the Digest module of the ruby standard library to support marshalling 
+
+With this gem you can accumulative compute the digest of a byte
+sequence over several executions iterations by storing the marshalled
+digest object in a database:
+
+    class FakeDatabase
+      attr_accessor :value
+    end
+    @db = FakeDatabase.new
+
+    def update_digest(part)
+      marshalled_digest = Marshal::load(@db.value) # Fetch the last digest from database
+      marshalled_digest << part # Compute digest incrementally
+      @db.value = Marshal::dump(marshalled_digest) # Store updated digest in database
+    end
+
+    ## parts_array is provided; for example as a series of files
+    ## generated with the command split on a larger file.
+    @db.value = Marshal::dump(Digest::MD5.new) #An initial value
+    parts_array.each do |part|
+      # Assume this method is invoked in a new process each time, and
+      # the only thing they share is the database (faked in the example with @db)
+      update_digest(part)
+    end
+    Marshal::load(@db.value).hexdigest.should == Digest::MD5.hexdigest(parts_array.inject("", :+))
+
+The plan is to have this feature become part of the ruby standard library.
 
 == Contributing to digest_extensions
- 
+
 * Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet
 * Check out the issue tracker to make sure someone already hasn't requested it and/or contributed it
 * Fork the project

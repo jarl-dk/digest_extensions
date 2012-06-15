@@ -61,15 +61,26 @@ describe Digest::MD5 do
     parts_array = (0..parts).map{|p| byte_sequence[(p*max_size)...((p+1)*max_size)]}
     
     it "can be used to take a series of parts and compute the digest of the concatenation" do
-      ## parts_array is provided.
-      marshalled_digest_in_database = Marshal::dump(Digest::MD5.new) #An initial value
-      parts_array.each do |part|
-        marshalled_digest = Marshal::load(marshalled_digest_in_database) # Fetch from database
-        marshalled_digest << part
-        marshalled_digest_in_database = Marshal::dump(marshalled_digest) # Store from database
+      class FakeDatabase
+        attr_accessor :value
       end
-      marshalled_digest = Marshal::load(marshalled_digest_in_database) # Fetch from database
-      marshalled_digest.hexdigest.should == Digest::MD5.hexdigest(parts_array.inject("", :+))
+      @db = FakeDatabase.new
+
+      def update_digest(part)
+        marshalled_digest = Marshal::load(@db.value) # Fetch the last digest from database
+        marshalled_digest << part # Compute digest incrementally
+        @db.value = Marshal::dump(marshalled_digest) # Store updated digest in database
+      end
+
+      ## parts_array is provided; for example as a series of files
+      ## generated with the command split on a larger file.
+      @db.value = Marshal::dump(Digest::MD5.new) #An initial value
+      parts_array.each do |part|
+        # Assume this method is invoked in a new process each time, and
+        # the only thing they share is the database (faked in the example with @db)
+        update_digest(part)
+      end
+      Marshal::load(@db.value).hexdigest.should == Digest::MD5.hexdigest(parts_array.inject("", :+))
     end
   end
 end
